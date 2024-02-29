@@ -5,8 +5,6 @@ function Square({value, onSquareClick}) {
 }
 
 function Board({ isXNext, squares, onPlay }) {
-  //const [isXNext, setIsXNext] = useState(true);
-  //const [squares, setSquares] = useState(Array(9).fill(null));
 
   function handleClick(squareIndex) {
     if(calculateWinner(squares) || squares[squareIndex])
@@ -14,8 +12,6 @@ function Board({ isXNext, squares, onPlay }) {
     
     const newSquareValues = squares.slice();
     isXNext?newSquareValues[squareIndex] = 'X':newSquareValues[squareIndex] = 'O';
-    //setSquares(newSquareValues);
-    //setIsXNext(!isXNext);
     onPlay(newSquareValues);
   }
 
@@ -50,14 +46,34 @@ function Board({ isXNext, squares, onPlay }) {
 }
 
 export default function Game() {
-  const [isXNext, setIsXNext] = useState(true);
   const [history, setHistory] = useState([Array(9).fill(null)]);
-  const currentSquares = history[history.length - 1];
+  const [currentMove, setCurrentMove] = useState(0);
+  const isXNext = currentMove % 2 === 0;
+  const currentSquares = history[currentMove];
 
   function handlePlay(newSquareValues){
-    setHistory([...history, newSquareValues]);
-    setIsXNext(!isXNext);
+    const nextHistory = [...history.slice(0, currentMove + 1), newSquareValues];
+    setHistory(nextHistory);
+    setCurrentMove(nextHistory.length - 1);
   }
+
+  function jumpTo(moveToJump) {
+    setCurrentMove(moveToJump);
+  }
+
+  const moves = history.map((squaresOnMoveNo,moveNo)=>{
+    let description;
+    if (moveNo > 0) {
+      description = 'Go to move #' + moveNo;
+    } else {
+      description = 'Go to game start';
+    }
+    return (
+      <li key={moveNo}>
+        <button onClick={() => jumpTo(moveNo)}>{description}</button>
+      </li>
+    );
+  });
 
   return (
     <div className="game">
@@ -65,7 +81,7 @@ export default function Game() {
         <Board isXNext={isXNext} squares={currentSquares} onPlay={handlePlay} />
       </div>
       <div className="game-info">
-        <ol>{/*TODO*/}</ol>
+        <ol>{moves}</ol>
       </div>
     </div>
   );
